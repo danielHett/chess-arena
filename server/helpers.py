@@ -30,10 +30,6 @@ def parse_board_state(state_string):
             state_string = state_string[1:]
         i += int(n)
         
-            
-
-
-    print(board)
     return board
 
 def parse_state_string(state_string):
@@ -41,17 +37,23 @@ def parse_state_string(state_string):
     Given a state string (see Forsyth-Edwards notation), this function returns a structure with corresponding 
     fields. 
 
+    Here's a link to Forsyth-Edwards Notation: https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+
     arguments:
     state_string (string) -- The Forsyth-Edwards string outlining the state of the game. 
 
     return:
     a dictionary with the corresponding fields. 
     """
-    state = {}
+    teile = state_string.split()
 
-    # TODO: Someone needs to write this code. 
-    # Here's a link to Forsyth-Edwards Notation: https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+    # Sanity check. If there are more than two, then something is wrong. 
+    if len(teile) != 2:
+        raise ValueError()
+    
+    state = {
+        'board': parse_board_state(teile[0]),
+        'player': teile[1]
+    }
 
     return state
-
-parse_board_state('rnbqkbnrpppppppp32PPPPPPPPRNBQKBNR')
