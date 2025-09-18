@@ -1,9 +1,14 @@
 from flask import Flask
-app = Flask(__name__)
+from flask import request
 
 """
 Server used for playing games. 
 """
+
+app = Flask(__name__)
+
+# TODO: Find a better way to store this information. 
+games = { '1': { 'state': 'foo', 'pass_share': 'foo', 'pass_white': 'foo', 'pass_black': 'foo' } }
 
 # Caller passes a password. A game ID and unique password are generated and given back to the caller. The 
 # caller uses the generated password to make moves for their own color. The ID passed to the server is used
@@ -25,9 +30,18 @@ def join_game():
     return 0
 
 # Used to get the state of a game. No password needed for this path. 
-@app.get("/games/<string:game_id>")
-def get_game():
+@app.get("/games/<game_id>")
+def get_game(game_id):
+    if game_id not in games: 
+        # TODO: Send back some sort of error?
+        return 'bad'
     
-    # TODO: Write some code here. 
+    game = games.get(game_id)
+
+    if 'state' not in game:
+        # TODO: More serious error. 
+        return 'reall_bad'
     
-    return 0
+    state = games.get(game_id).get('state')
+    
+    return state
