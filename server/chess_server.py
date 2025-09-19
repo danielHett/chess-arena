@@ -23,7 +23,7 @@ def create_game():
         abort(400)
 
     # Create the object for the new game and add it to the database. 
-    new_game_id = uuid.uuid4()
+    new_game_id = str(uuid.uuid4())
     new_game_pass_white = secrets.token_hex(128)
     new_game = { 'state': 'rnbqkbnrpppppppp32PPPPPPPPRNBQKBNR w', 'password': content['password'], 'pass_white': new_game_pass_white }
     games[new_game_id] = new_game
@@ -42,19 +42,13 @@ def join_game():
 # Used to get the state of a game. No password needed for this path. 
 @app.get("/games/<game_id>")
 def get_game(game_id):
+    print(games)
+    print(game_id)
+    
     if game_id not in games: 
-        # TODO: Send back some sort of error?
-        return 'bad'
+        abort(404)
     
-    game = games.get(game_id)
-
-    if 'state' not in game:
-        # TODO: More serious error. 
-        return 'reall_bad'
-    
-    state = games.get(game_id).get('state')
-    
-    return state
+    return games.get(game_id).get('state')
 
 """
 For updating the state of the game. 
