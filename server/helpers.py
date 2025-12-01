@@ -1,4 +1,4 @@
-BOARD_SIZE = 8
+import constants
 
 def parse_board_state(state_string):
     """
@@ -11,33 +11,34 @@ def parse_board_state(state_string):
     return:
     a dictionary with the corresponding fields. 
     """
-    board = [['.' for x in range(BOARD_SIZE)] for y in range(BOARD_SIZE)] 
+    board = [[constants.EMPTY for r in range(constants.BOARD_SIZE)] for c in range(constants.BOARD_SIZE)] 
 
-    # Iterate through the board. 'i' tracks the state_string and 'j' the board. 
-    i = 0
-    while len(state_string) > 0: 
-        # If not a number, it's a piece. Add it to the board.    
-        if not str.isdigit(state_string[0]):
-            board[int(i / BOARD_SIZE)][i % BOARD_SIZE] = state_string[0]
-            state_string = state_string[1:]
-            i += 1
-            continue
-
-        # If it is a digit, we need to parse the whole number. 
-        n = ''
-        while str.isdigit(state_string[0]):
-            n += state_string[0]
-            state_string = state_string[1:]
-        i += int(n)
-        
+    # Get the rows. If there are not exactly eight rows, something is seriously wrong. 
+    rows = state_string.split('/')
+    if len(rows) != 8:
+        raise ValueError()
+    
+    # Iterate through every row. 
+    for i in range(8):
+        # Iterate throgh every tile. 
+        j = 0
+        for c in rows[7 - i]:
+            if str.isdigit(c):
+                # TODO: Check that the number isn't bogus. 
+                j += int(c)
+            else:
+                board[i][j] = c
+                j += 1
     return board
 
-def parse_state_string(state_string):
+def parse_fen_string(state_string):
     """
     Given a state string (see Forsyth-Edwards notation), this function returns a structure with corresponding 
     fields. 
 
     Here's a link to Forsyth-Edwards Notation: https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+
+    Here is an example string: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 
     arguments:
     state_string (string) -- The Forsyth-Edwards string outlining the state of the game. 
@@ -45,15 +46,98 @@ def parse_state_string(state_string):
     return:
     a dictionary with the corresponding fields. 
     """
-    teile = state_string.split()
+    parts = state_string.split()
 
-    # Sanity check. If there are more than two, then something is wrong. 
-    if len(teile) != 2:
+    # Sanity check. If there are more than four, then something is wrong. 
+    if len(parts) != 6:
         raise ValueError()
-    
-    state = {
-        'board': parse_board_state(teile[0]),
-        'player': teile[1]
-    }
 
-    return state
+    # board, active_player, castling, and en_passant_loc
+    return { 'board': parse_board_state(parts[0]), 'active_player': parts[1], 'castling': parts[2], 'en_passant_point': parts[3] }
+
+def who_is_on_the_sqaure(board, point):
+    """
+    Answers the question, who is on the square? 
+
+    arguments:
+    board (array) -- A 2D array representing a chess board.
+    point (tuple) -- A pair of integers representing a square on a chess board.  
+
+    return:
+    Can return a white piece, a black piece, or nothing. 
+    """
+
+    # Point can't exceed the bounds of the board. 
+    if (is_bad_coordinate(point)):
+        raise IndexError('point out of range')
+
+    r, c = point
+    sqaure = board[r][c]
+
+    # Just assume anything that isn't alpha is empty. 
+    if not sqaure.isalpha():
+        return constants.EMPTY
+    
+    return constants.WHITE if sqaure.isupper() else constants.BLACK
+
+def what_is_on_the_sqaure(board, point):
+    """
+    Answers the question, what is on the square? 
+
+    arguments:
+    board (array) -- A 2D array representing a chess board.
+    point (tuple) -- A pair of integers representing a square on a chess board.  
+
+    return:
+    the constant value for the corresponding piece. 
+    """
+    # Point can't exceed the bounds of the board. 
+    if (is_bad_coordinate(point)):
+        raise IndexError('point out of range')
+
+    r, c = point
+    sqaure = board[r][c]
+
+    if not sqaure.isalpha():
+        return constants.EMPTY
+    
+    return sqaure.lower()
+
+def is_matching_coordinates(a, b):
+    return a[0] == b[0] and a[1] == b[1]
+
+def next_player(player):
+    return constants.WHITE if player == constants.BLACK else constants.BLACK
+
+def end_sqaure(color):
+    return constants.WHITE_LAST_RANK_INDEX if color == constants.WHITE else constants.BLACK_LAST_RANK_INDEX
+
+def is_bad_coordinate(point):
+    r, c = point
+    return (r >= constants.BOARD_SIZE or r < 0) or (c >= constants.BOARD_SIZE or c < 0)
+
+def is_in_start_state(game_id, games):
+    return game_id in games and 'pass_black' in games[game_id]
+
+def assert_game_exists(game_id, games, request):
+    return False
+
+def string_to_coord(s):
+    return (s.split(',')[0], s.split(',')[1])
+
+def coord_to_string(c):
+    return str(c[0]) + ',' + str(c[1])
+
+def calc_movement(move):
+    start_point, end_point, _ = move
+    start_x, start_y = start_point
+    end_x, end_y = end_point
+    
+    return (end_x - start_x, end_y - start_y)
+
+def print_board(b):
+    for row in reversed(b):
+        s = ''
+        for tile in row:
+            s += tile
+        print(s)
