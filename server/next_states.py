@@ -55,7 +55,7 @@ def next_states_pawn(state, point):
     if (state['board'][next_r][c] == constants.EMPTY):
         # are we at the end sqaure? then give back all promotion states. 
         if next_r == end_sqaure(color):
-            [next_states.append(copy_state(state, (r, c), (next_r, c), piece if color == constants.BLACK else piece.upper())) for piece in constants.PROMOTION_LIST]
+            [next_states.append(copy_state(state, (r, c), (next_r, c), piece if color == constants.WHITE else piece.lower())) for piece in constants.PROMOTION_LIST]
         # otherwise just move forward. 
         else:
             next_states.append(copy_state(state, (r, c), (next_r, c)))
