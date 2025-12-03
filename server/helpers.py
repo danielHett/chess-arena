@@ -2,16 +2,9 @@ import constants
 
 def parse_board_state(state_string):
     """
-    Given a state string (see Forsyth-Edwards notation), this function returns a structure with corresponding 
-    fields. 
-
-    arguments:
-    state_string (string) -- The Forsyth-Edwards string outlining the state of the game. 
-
-    return:
-    a dictionary with the corresponding fields. 
+    Guess what this does. 
     """
-    board = [[constants.EMPTY for r in range(constants.BOARD_SIZE)] for c in range(constants.BOARD_SIZE)] 
+    board = [[constants.EMPTY for _ in range(constants.BOARD_SIZE)] for _ in range(constants.BOARD_SIZE)] 
 
     # Get the rows. If there are not exactly eight rows, something is seriously wrong. 
     rows = state_string.split('/')
@@ -51,9 +44,42 @@ def parse_fen_string(state_string):
     # Sanity check. If there are more than four, then something is wrong. 
     if len(parts) != 6:
         raise ValueError()
+    
+    board = parse_board_state(parts[0])
+    
+    if parts[1] == 'b':
+        active_player = constants.BLACK
+    elif parts[1] == 'w':
+        active_player = constants.WHITE
+    else:
+        raise ValueError('active_player must be white or black')
+    
+    # TODO: do something with this? check if it is valid?
+    castling = parts[2]
+
+    # TODO: check this is valid. 
+    en_passant_point = None
+    if parts[3] == '-':
+        en_passant_point = '-'
+    elif len(parts[3]) == 2 and parts[3][0] in constants.COORD_MAP:
+        en_passant_point = (int(parts[3][1]) - 1, constants.COORD_MAP[parts[3][0]])
+    else:
+        raise ValueError('something is wrong with the en passant point')
 
     # board, active_player, castling, and en_passant_loc
-    return { 'board': parse_board_state(parts[0]), 'active_player': parts[1], 'castling': parts[2], 'en_passant_point': parts[3] }
+    return { 'board': board, 'active_player': active_player, 'castling': castling, 'en_passant_point': en_passant_point }
+
+def write_state_to_fen(state):
+    fen_str = ''
+    for row in state['board']:
+        empty_sqaure_count = 0
+        for square in row:
+            if square == constants.EMPTY:
+                empty_sqaure_count += 1
+            else:
+                fen_str = ('' if empty_sqaure_count == 0 else str(empty_sqaure_count)) + fen_str
+                empty_sqaure_count = 0
+    
 
 def who_is_on_the_sqaure(board, point):
     """
