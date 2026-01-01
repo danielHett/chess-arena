@@ -11,20 +11,39 @@ def parse_board_state(state_string):
     if len(rows) != 8:
         raise ValueError()
     
-    # Iterate through every row. 
+    # Iterate through every row.
     for i in range(8):
-        # Iterate throgh every tile. 
+       # Iterate throgh every tile. 
         j = 0
         for c in rows[7 - i]:
+            # This should stop us from accessing out-of-bounds. 
+            if j >= 8:
+                raise ValueError('More than 8 tiles in row ' + str(i) + '.')
+            
             if str.isdigit(c):
                 # TODO: Check that the number isn't bogus. 
                 j += int(c)
             else:
                 board[i][j] = c
                 j += 1
+        
+        if j != 8:
+            raise ValueError('Number of tiles (' + str(j) + ') in row ' + str(i) + ' is not equal to 8.')
+        
     return board
 
-def parse_fen_string(state_string):
+# TODO: Needs more checking. 
+def parse_en_passant_point(point_string):
+    if point_string == '-':
+        return None
+    elif len(point_string) == 2 and point_string[0] in constants.COORD_MAP:
+        # FEN coordinates are 1-indexed but we are indexing from 0, hence we subtract 1. 
+        # We also need to translate the letter to an integer. 
+        return (int(point_string[1]) - 1, constants.COORD_MAP[point_string[0]])
+    else:
+        raise ValueError('something is wrong with the en passant point')
+    
+def read_fen_string(state_string):
     """
     Given a state string (see Forsyth-Edwards notation), this function returns a structure with corresponding 
     fields. 
@@ -56,29 +75,26 @@ def parse_fen_string(state_string):
     
     # TODO: do something with this? check if it is valid?
     castling = parts[2]
-
-    # TODO: check this is valid. 
-    en_passant_point = None
-    if parts[3] == '-':
-        en_passant_point = '-'
-    elif len(parts[3]) == 2 and parts[3][0] in constants.COORD_MAP:
-        en_passant_point = (int(parts[3][1]) - 1, constants.COORD_MAP[parts[3][0]])
-    else:
-        raise ValueError('something is wrong with the en passant point')
+ 
+    en_passant_point = parse_en_passant_point(parts[3])
 
     # board, active_player, castling, and en_passant_loc
     return { 'board': board, 'active_player': active_player, 'castling': castling, 'en_passant_point': en_passant_point }
 
-def write_state_to_fen(state):
+def write_fen_string(state):
     fen_str = ''
     for row in state['board']:
         empty_sqaure_count = 0
+        row_str = ''
         for square in row:
             if square == constants.EMPTY:
                 empty_sqaure_count += 1
             else:
-                fen_str = ('' if empty_sqaure_count == 0 else str(empty_sqaure_count)) + fen_str
+                row_str += ('' if empty_sqaure_count == 0 else str(empty_sqaure_count)) + square
                 empty_sqaure_count = 0
+        fen_str = row_str + fen_str
+    
+    print(fen_str)
     
 
 def who_is_on_the_sqaure(board, point):
