@@ -1,7 +1,7 @@
 import pytest
 from copy import deepcopy
 from schach_engine import constants
-from schach_engine.state_utilities import parse_board_state, parse_en_passant_point, read_fen_string
+from schach_engine.state_utilities import parse_board_state, parse_en_passant_sqaure, read_fen_string, write_fen_string
 
 class TestParseBoardState:
     def test_valid_board_state(self):
@@ -61,22 +61,22 @@ class TestParseBoardState:
 
 class TestParseEnPassantPoint:
     def test_empty(self):
-        assert parse_en_passant_point('-') is None
+        assert parse_en_passant_sqaure('-') is None
 
     def test_valid(self):
-        assert parse_en_passant_point('e3') == (2, 4)
+        assert parse_en_passant_sqaure('e3') == (2, 4)
 
     def test_invalid_invalid_letter(self):
         with pytest.raises(ValueError):
-            parse_en_passant_point('i1')
+            parse_en_passant_sqaure('i1')
         with pytest.raises(ValueError):
-            parse_en_passant_point('E1')
+            parse_en_passant_sqaure('E1')
     
     def test_invalid_invalid_number(self):
         with pytest.raises(ValueError):
-            parse_en_passant_point('i0')
+            parse_en_passant_sqaure('i0')
         with pytest.raises(ValueError):
-            parse_en_passant_point('i9')
+            parse_en_passant_sqaure('i9')
 
 class TestReadFenString:
     def test_read_valid_fen_string(self):
@@ -85,7 +85,7 @@ class TestReadFenString:
             'board': deepcopy(constants.STARTING_BOARD),
             'active_player': constants.WHITE, 
             'castling': 'KQkq', 
-            'en_passant_point': None
+            'en_passant_sqaure': None
         }
 
         assert read_fen_string(s) == expected
@@ -95,3 +95,7 @@ class TestReadFenString:
 
         with pytest.raises(ValueError):
             read_fen_string(s)
+
+class TestWriteFenString:
+    def test_write_valid_state(self):
+        assert write_fen_string(read_fen_string(constants.STARTING_FEN_STRING)) == constants.STARTING_FEN_STRING

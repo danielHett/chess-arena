@@ -35,8 +35,24 @@ def parse_board_state(state_string):
         
     return board
 
+def write_board_state(board):
+    board_string = ''
+    for row_index in range(len(board)):
+        row = board[row_index]
+        empty_sqaure_count = 0
+        row_string = ''
+        for square in row:
+            if square == constants.EMPTY:
+                empty_sqaure_count += 1
+            else:
+                row_string += ('' if empty_sqaure_count == 0 else str(empty_sqaure_count)) + square
+                empty_sqaure_count = 0
+        board_string = row_string + ('' if empty_sqaure_count == 0 else str(empty_sqaure_count)) + ('/' if row_index != 0 else '') + board_string
+    return board_string
+       
+
 # TODO: Needs more checking. 
-def parse_en_passant_point(point_string):
+def parse_en_passant_sqaure(point_string):
     """
     This is used for parsing the en-passant part of a chess state encoded using Forsyth-Edwards notation. 
     
@@ -45,12 +61,18 @@ def parse_en_passant_point(point_string):
     """
     if point_string == '-':
         return None
-    elif len(point_string) == 2 and point_string[0] in constants.COORD_MAP:
+    elif len(point_string) == 2 and point_string[0] in constants.L_TO_I:
         # FEN coordinates are 1-indexed but we are indexing from 0, hence we subtract 1. 
         # We also need to translate the letter to an integer. 
-        return (int(point_string[1]) - 1, constants.COORD_MAP[point_string[0]])
+        return (int(point_string[1]) - 1, constants.L_TO_I[point_string[0]])
     else:
         raise ValueError('ERROR: Something is wrong with the en-passant sqaure.')
+    
+def write_en_passant_sqaure(en_passant_sqaure):
+    if en_passant_sqaure is None:
+        return '-'
+    return constants.I_TO_L[en_passant_sqaure[0]] + constants.I_TO_L[en_passant_sqaure[1]]
+    
     
 def read_fen_string(state_string):
     """
@@ -77,10 +99,10 @@ def read_fen_string(state_string):
     # TODO: do something with this? check if it is valid?
     castling = parts[2]
  
-    en_passant_point = parse_en_passant_point(parts[3])
+    en_passant_sqaure = parse_en_passant_sqaure(parts[3])
 
     # board, active_player, castling, and en_passant_loc
-    return { 'board': board, 'active_player': active_player, 'castling': castling, 'en_passant_point': en_passant_point }
+    return { 'board': board, 'active_player': active_player, 'castling': castling, 'en_passant_sqaure': en_passant_sqaure }
 
 # TODO: Finish and test this. 
 def write_fen_string(state):
@@ -89,16 +111,5 @@ def write_fen_string(state):
     
     :param state: the (already parsed) state of the chess game. 
     """
-    fen_str = ''
-    for row in state['board']:
-        empty_sqaure_count = 0
-        row_str = ''
-        for square in row:
-            if square == constants.EMPTY:
-                empty_sqaure_count += 1
-            else:
-                row_str += ('' if empty_sqaure_count == 0 else str(empty_sqaure_count)) + square
-                empty_sqaure_count = 0
-        fen_str = row_str + fen_str
-    
-    print(fen_str)
+    # Example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+    return write_board_state(state['board']) + ' ' + ('w' if state['active_player'] == constants.WHITE else 'b') + ' ' + state['castling'] + ' ' + write_en_passant_sqaure(state['en_passant_sqaure'])  + ' 0 1' 

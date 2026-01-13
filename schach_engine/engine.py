@@ -20,7 +20,7 @@ def copy_state(state, f, t, piece=None):
 
     state['active_player'] = next_player(state['active_player'])
 
-    state['en_passant_point'] = None
+    state['en_passant_sqaure'] = None
 
     return state
 
@@ -44,7 +44,7 @@ def next_states_pawn(state, point):
         # check first if the next spot is empty. if so, we have a possible state. 
         if (state['board'][next_r][c] == constants.EMPTY and state['board'][über_next_r][c] == constants.EMPTY):
             new_state = copy_state(state, (r, c), (über_next_r, c ))
-            new_state['en_passant_point'] = (next_r, c)  # have to update the en_passant_point. 
+            new_state['en_passant_sqaure'] = (next_r, c)  # have to update the en_passant_sqaure. 
             next_states.append(new_state)
     
     # moving forward. make sure we aren't already at an end state. 
@@ -72,7 +72,7 @@ def next_states_pawn(state, point):
         # first, can we attack the sqaure? must be an enemy piece that isn't a king.
         is_enemy_on_point = who_is_on_the_sqaure(state['board'], next_point) == color and what_is_on_the_sqaure(state['board'], next_point) != constants.KING
         # or the point is en passant. 
-        is_en_passant = state['en_passant_point'] == next_point
+        is_en_passant = state['en_passant_sqaure'] == next_point
         
         if is_enemy_on_point or is_en_passant:
             next_r, next_c = next_point

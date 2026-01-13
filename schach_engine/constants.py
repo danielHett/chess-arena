@@ -25,4 +25,8 @@ STARTING_BOARD = [
         ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
         ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
 ]
-COORD_MAP = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
+# letter to integer map. 
+L_TO_I = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
+
+# inverse
+I_TO_L = {v: k for k, v in L_TO_I.items()}
